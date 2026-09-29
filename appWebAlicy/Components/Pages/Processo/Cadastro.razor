@@ -1,0 +1,96 @@
+@page "/processos/cadastro"
+@rendermode InteractiveServer
+@using AppWebAlicy.Model
+@using Microsoft.AspNetCore.Components.Forms
+@inject ProcessoDAO ProcessoDao
+@inject NavigationManager Navigation
+
+<PageTitle>Novo Processo</PageTitle>
+
+<h2 class="fw-bold mb-4">Cadastro de Processo</h2>
+
+<EditForm Model="@processo" OnValidSubmit="@Salvar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="numero" class="form-label">Número do processo</label>
+            <InputText id="numero" class="form-control" @bind-Value="processo.Numero" />
+            <ValidationMessage For="@(() => processo.Numero)" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="data" class="form-label">Data</label>
+            <InputDate id="data" class="form-control" @bind-Value="processo.Data" />
+            <ValidationMessage For="@(() => processo.Data)" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="interessado" class="form-label">Interessado</label>
+            <InputText id="interessado" class="form-control" @bind-Value="processo.Interessado" />
+            <ValidationMessage For="@(() => processo.Interessado)" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="assunto" class="form-label">Assunto</label>
+            <InputText id="assunto" class="form-control" @bind-Value="processo.Assunto" />
+            <ValidationMessage For="@(() => processo.Assunto)" />
+        </div>
+
+        <div class="col-12">
+            <label for="descricao" class="form-label">Descrição</label>
+            <InputTextArea id="descricao" class="form-control" rows="5" @bind-Value="processo.Descricao" />
+            <ValidationMessage For="@(() => processo.Descricao)" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="situacao" class="form-label">Situação</label>
+            <InputSelect id="situacao" class="form-select" @bind-Value="processo.Situacao">
+                <option value="Aberto">Aberto</option>
+                <option value="Em andamento">Em andamento</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Arquivado">Arquivado</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => processo.Situacao)" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(mensagemErro))
+    {
+        <div class="alert alert-danger mt-3">@mensagemErro</div>
+    }
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary" disabled="@salvando">
+            @(salvando ? "Salvando..." : "Salvar")
+        </button>
+        <a href="/processos" class="btn btn-secondary">Cancelar</a>
+    </div>
+</EditForm>
+
+@code {
+    private Processo processo = new();
+    private bool salvando;
+    private string mensagemErro = string.Empty;
+
+    private void Salvar()
+    {
+        if (salvando)
+            return;
+
+        salvando = true;
+        mensagemErro = string.Empty;
+
+        try
+        {
+            ProcessoDao.Inserir(processo);
+            Navigation.NavigateTo("/processos");
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Não foi possível salvar o processo: {ex.Message}";
+            salvando = false;
+        }
+    }
+}

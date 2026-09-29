@@ -1,51 +1,88 @@
-﻿@page "/processos"
-@using appWebAlicy.Model
-@using appWebAlicy.DAO
-@inject ProcessoDAO ProcessoDAO
+@page "/processos"
+@rendermode InteractiveServer
+@using AppWebAlicy.Model
+@inject ProcessoDAO ProcessoDao
 
-<PageTitle>Processos - Sistema de Controle de Processos</PageTitle>
+<PageTitle>Processos</PageTitle>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2>Consulta de Processos</h2>
+        <h2 class="fw-bold mb-1">Consulta de Processos</h2>
+        <p class="text-muted mb-0">Consulte os processos cadastrados.</p>
+    </div>
+
+    <div>
+        <a href="/processos/cadastro" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Novo Processo
+        </a>
     </div>
 </div>
-<div class="custom-table-card">
+
+@if (erro)
+{
+    <div class="alert alert-danger" role="alert">
+        @mensagemErro
+    </div>
+}
+else if (carregando)
+{
+    <p><em>Carregando processos...</em></p>
+}
+else if (processos.Count == 0)
+{
+    <div class="alert alert-info">
+        Nenhum processo cadastrado.
+    </div>
+}
+else
+{
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table table-striped table-hover align-middle">
             <thead>
                 <tr>
-                    <th>Id</th>
                     <th>Número</th>
+                    <th>Data</th>
                     <th>Interessado</th>
                     <th>Assunto</th>
                     <th>Situação</th>
-                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var processo in processos)
                 {
                     <tr>
-                        <td>@processo.Id</td>
                         <td>@processo.Numero</td>
+                        <td>@(processo.Data?.ToString("dd/MM/yyyy"))</td>
                         <td>@processo.Interessado</td>
                         <td>@processo.Assunto</td>
                         <td>@processo.Situacao</td>
-                        <td></td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-</div>
+}
 
 @code {
     private List<Processo> processos = new();
+    private bool carregando = true;
+    private bool erro;
+    private string mensagemErro = string.Empty;
+
     protected override void OnInitialized()
     {
-        // Chama o DAO para buscar os dados no banco
-        processos = ProcessoDAO.Listar();
+        try
+        {
+            processos = ProcessoDao.Listar();
+        }
+        catch (Exception ex)
+        {
+            erro = true;
+            mensagemErro = $"Não foi possível carregar os processos: {ex.Message}";
+        }
+        finally
+        {
+            carregando = false;
+        }
     }
-
-
 }
