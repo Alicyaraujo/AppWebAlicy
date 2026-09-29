@@ -5,24 +5,26 @@ namespace appWebAlicy.Configs
     public class Conexao
     {
         private readonly string _connectionString;
-        // A IConfiguration é injetada automaticamente e permite ler o appsettings.json
- public Conexao(IConfiguration configuration)
+
+        public Conexao(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("MySqlConnection") ?? "";
+            _connectionString = configuration.GetConnectionString("MySqlConnection") ?? throw new InvalidOperationException( "A string de conexão 'ConnectionStrings:MySqlConnection' não foi configurada."
+                );
         }
-        // Cria e ABRE uma nova conexão com o banco
+
         public MySqlConnection GetConnection()
         {
             var conn = new MySqlConnection(_connectionString);
             conn.Open();
             return conn;
         }
-        // Cria um comando SQL. Se nenhuma conexão for passada, abre uma nova.
- public MySqlCommand CreateCommand(string query, MySqlConnection? conn = null)
+
+        public MySqlCommand CreateCommand(
+            string query,
+            MySqlConnection? conn = null)
         {
             conn ??= GetConnection();
             return new MySqlCommand(query, conn);
         }
-
     }
 }
